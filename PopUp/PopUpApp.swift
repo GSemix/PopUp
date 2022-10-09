@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct PopUpApp: App {
+    @StateObject var sheetManager: SheetManager = SheetManager()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(sheetManager)
         }
     }
 }

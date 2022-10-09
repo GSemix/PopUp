@@ -7,18 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		236C4A18F88BB070ADDD542D /* Pods_PopUp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB0034EDF8F400B870833805 /* Pods_PopUp.framework */; };
 		933C158028EDC5F400850A7D /* PopUpApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933C157F28EDC5F400850A7D /* PopUpApp.swift */; };
 		933C158228EDC5F400850A7D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933C158128EDC5F400850A7D /* ContentView.swift */; };
 		933C158428EDC5FC00850A7D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 933C158328EDC5FC00850A7D /* Assets.xcassets */; };
 		933C158728EDC5FC00850A7D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 933C158628EDC5FC00850A7D /* Preview Assets.xcassets */; };
+		933C159028EDC6AE00850A7D /* PopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933C158F28EDC6AE00850A7D /* PopupView.swift */; };
+		933C159228EDD2D300850A7D /* SheetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933C159128EDD2D300850A7D /* SheetManager.swift */; };
+		933C159428EDE38E00850A7D /* PopupViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933C159328EDE38E00850A7D /* PopupViewModifier.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		409C0E48AC85FDEA07843105 /* Pods-PopUp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PopUp.debug.xcconfig"; path = "Target Support Files/Pods-PopUp/Pods-PopUp.debug.xcconfig"; sourceTree = "<group>"; };
+		5D33E5CC9B047953CDE22AB4 /* Pods-PopUp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PopUp.release.xcconfig"; path = "Target Support Files/Pods-PopUp/Pods-PopUp.release.xcconfig"; sourceTree = "<group>"; };
 		933C157C28EDC5F400850A7D /* PopUp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PopUp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		933C157F28EDC5F400850A7D /* PopUpApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopUpApp.swift; sourceTree = "<group>"; };
 		933C158128EDC5F400850A7D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		933C158328EDC5FC00850A7D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		933C158628EDC5FC00850A7D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		933C158F28EDC6AE00850A7D /* PopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupView.swift; sourceTree = "<group>"; };
+		933C159128EDD2D300850A7D /* SheetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetManager.swift; sourceTree = "<group>"; };
+		933C159328EDE38E00850A7D /* PopupViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupViewModifier.swift; sourceTree = "<group>"; };
+		CB0034EDF8F400B870833805 /* Pods_PopUp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PopUp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -26,6 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				236C4A18F88BB070ADDD542D /* Pods_PopUp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,6 +48,8 @@
 			children = (
 				933C157E28EDC5F400850A7D /* PopUp */,
 				933C157D28EDC5F400850A7D /* Products */,
+				D933D5DE068697B4E2CBBC4F /* Pods */,
+				95991B091AD814F7C0154FDE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -53,6 +66,9 @@
 			children = (
 				933C157F28EDC5F400850A7D /* PopUpApp.swift */,
 				933C158128EDC5F400850A7D /* ContentView.swift */,
+				933C159328EDE38E00850A7D /* PopupViewModifier.swift */,
+				933C159128EDD2D300850A7D /* SheetManager.swift */,
+				933C158F28EDC6AE00850A7D /* PopupView.swift */,
 				933C158328EDC5FC00850A7D /* Assets.xcassets */,
 				933C158528EDC5FC00850A7D /* Preview Content */,
 			);
@@ -67,6 +83,23 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		95991B091AD814F7C0154FDE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CB0034EDF8F400B870833805 /* Pods_PopUp.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D933D5DE068697B4E2CBBC4F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				409C0E48AC85FDEA07843105 /* Pods-PopUp.debug.xcconfig */,
+				5D33E5CC9B047953CDE22AB4 /* Pods-PopUp.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -74,6 +107,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 933C158A28EDC5FC00850A7D /* Build configuration list for PBXNativeTarget "PopUp" */;
 			buildPhases = (
+				A0C4A063D9769EC51563E69B /* [CP] Check Pods Manifest.lock */,
 				933C157828EDC5F400850A7D /* Sources */,
 				933C157928EDC5F400850A7D /* Frameworks */,
 				933C157A28EDC5F400850A7D /* Resources */,
@@ -132,11 +166,39 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		A0C4A063D9769EC51563E69B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PopUp-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		933C157828EDC5F400850A7D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				933C159028EDC6AE00850A7D /* PopupView.swift in Sources */,
+				933C159228EDD2D300850A7D /* SheetManager.swift in Sources */,
+				933C159428EDE38E00850A7D /* PopupViewModifier.swift in Sources */,
 				933C158228EDC5F400850A7D /* ContentView.swift in Sources */,
 				933C158028EDC5F400850A7D /* PopUpApp.swift in Sources */,
 			);
@@ -195,7 +257,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -249,7 +311,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -261,6 +323,7 @@
 		};
 		933C158B28EDC5FC00850A7D /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 409C0E48AC85FDEA07843105 /* Pods-PopUp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -275,6 +338,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -290,6 +354,7 @@
 		};
 		933C158C28EDC5FC00850A7D /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5D33E5CC9B047953CDE22AB4 /* Pods-PopUp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -304,6 +369,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
