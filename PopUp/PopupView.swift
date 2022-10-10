@@ -9,17 +9,21 @@ import SwiftUI
 
 struct PopupView: View {
     @State private var prevDragValue: DragGesture.Value?
-    @State private var prevDrag: CGFloat = .zero
+    @State private var prevDragTranslationHeight: CGFloat = .zero
     @State private var currentHeight: CGFloat = 300
     @State private var isDragging: Bool = false
-    @State private var isScrolling: Bool = false
-    @State private var time = Timer.publish(every: 0.001, on: .current, in: .tracking).autoconnect()
-    @State private var scrollCoord: CGFloat = .zero
-    @State private var lastScrollCoord: CGFloat = .zero
     @State private var contentHeight: CGFloat = .zero
+    @State private var verticalVelocity: CGFloat = .zero
+    //    @State private var verticalVelocityForBouncedBottom
+    @State private var contentOffset: CGFloat = .zero
+    
     let mainHeight: CGFloat = 300
     let minHeight: CGFloat = 150
     let maxHeight: CGFloat = 800
+    
+    let config: SheetManager.Config
+    let didClose: () -> Void
+    @GestureState private var dragGestureActive: Bool = false
     
     //    let startOpacity: Double = 0.4
     //    let endOpacity: Double = 0.8
@@ -27,17 +31,6 @@ struct PopupView: View {
     //        let result = Double((currentHeight - minHeight) / (maxHeight - minHeight))
     //        return max(0, min(1, result))
     //    }
-    
-    let config: SheetManager.Config
-    let didClose: () -> Void
-    
-    @State var scrollPosition: CGFloat = 0.0
-    @State var contentOffset: CGFloat = .zero
-    
-    @State private var verticalVelocity: CGFloat = .zero
-    
-//    @State private var workList: DispatchSourceTimer!
-//    @State private var mainCount: Int = 1
     
     var body: some View {
         ScrollView([]) {
@@ -51,16 +44,17 @@ struct PopupView: View {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear {
-                            contentHeight = proxy.size.height
+                            if proxy.size.height < maxHeight {
+                                contentHeight = maxHeight
+                            } else {
+                                contentHeight = proxy.size.height
+                            }
                         }
                 }
             )
         }
-        //        .disabled(currentHeight < maxHeight)
-        //        .coordinateSpace(name: "scroll")
         .frame(height: currentHeight <= maxHeight ? currentHeight : maxHeight)
-        .frame(maxWidth: .infinity)
-        .padding()
+        .frame(width: UIScreen.main.bounds.width)
         .multilineTextAlignment(.center)
         .background(backgroundContent)
         //            .overlay(alignment: .top, content: {
@@ -70,9 +64,16 @@ struct PopupView: View {
             close
         })
         .gesture(dragGesture)
-        //        .gesture(isScrolling ? nil : dragGesture)
+        .simultaneousGesture(tapToMaxHeight)
         .transition(.move(edge: .bottom))
         .animation(.easeInOut(duration: 0.2), value: !isDragging)
+        .onChange(of: dragGestureActive) { newIsActiveValue in
+            if newIsActiveValue == false {
+                dragCancelled()
+            } else {
+                print("changed")
+            }
+        }
     }
 }
 
@@ -115,34 +116,76 @@ private extension PopupView {
     //        .gesture(dragGesture)
     //    }
     
+    func dragCancelled() {
+        //        prevDragTranslationHeight = .zero
+        //        prevDragValue = .none
+        isDragging = false
+        
+        withAnimation(.spring()) {
+            switch currentHeight {
+            case contentHeight...:
+                currentHeight = contentHeight
+            case (((maxHeight - mainHeight) / 2) + mainHeight)...maxHeight:
+                currentHeight = maxHeight
+            case (((mainHeight - minHeight) / 2) + minHeight)..<(((maxHeight - mainHeight) / 2) + mainHeight):
+                currentHeight = mainHeight
+            case ..<(((mainHeight - minHeight) / 2) + minHeight):
+                currentHeight = minHeight
+            default: ()
+            }
+        }
+        
+        prevDragTranslationHeight = .zero
+        prevDragValue = .none
+        print("cancelled")
+        //        currentHeight = maxHeight
+    }
+    
+    //    var long: some Gesture {
+    //        LongPressGesture(minimumDuration: 0.0, maximumDistance: 0.0)
+    //            .onEnded { _ in
+    ////                if !isDragging {
+    //                verticalVelocity = .zero
+    //                print("lekfjveieljivbelivj")
+    ////                }
+    //            }
+    //    }
+    
+    var tapToMaxHeight: some Gesture {
+        TapGesture()
+            .onEnded { _ in
+                if [minHeight, mainHeight].contains(currentHeight) {
+                    withAnimation(.spring()) {
+                        currentHeight = maxHeight
+                    }
+                    
+                    print("hello")
+                }
+            }
+    }
+    
     var dragGesture: some Gesture {
         DragGesture(minimumDistance: 0, coordinateSpace: .global)
+            .updating($dragGestureActive) { value, state, transaction in
+                state = true
+            }
             .onChanged { value in
-//                if workList != nil {
-//                    workList?.cancel()
-//                    workList = nil
-//                }
-                
-//                mainCount = 1
-                
                 if !isDragging {
                     isDragging = true
                     verticalVelocity = .zero
                 }
                 
                 withAnimation(.interactiveSpring()) { // 0.05
-                    let dragAmount = value.translation.height - prevDrag
-                    if currentHeight < minHeight || currentHeight > contentHeight {
-                        currentHeight -= dragAmount * 0.1
-                    } else if currentHeight > contentHeight {
-                        currentHeight -= dragAmount
-                    } else if currentHeight <= contentHeight {
+                    let dragAmount = value.translation.height - prevDragTranslationHeight
+                    
+                    if currentHeight >= contentHeight {
+                        currentHeight -= dragAmount * 0.35
+                    } else if currentHeight < contentHeight && currentHeight > minHeight - minHeight / 3 {
                         currentHeight -= dragAmount * 1.35
                     }
                     
-                    //                    print(currentHeight)
                     prevDragValue = value
-                    prevDrag = value.translation.height
+                    prevDragTranslationHeight = value.translation.height
                 }
             }
             .onEnded { value in
@@ -150,39 +193,182 @@ private extension PopupView {
                 
                 switch currentHeight {
                 case (((maxHeight - mainHeight) / 2) + mainHeight)..<maxHeight:
-                    currentHeight = maxHeight
-                    isScrolling = true
-                    isDragging = false
-                case (((mainHeight - minHeight) / 2) + minHeight)..<(((maxHeight - mainHeight) / 2) + mainHeight):
-                    currentHeight = mainHeight
-                case ..<(((mainHeight - minHeight) / 2) + minHeight):
-                    currentHeight = minHeight
-                case maxHeight..<contentHeight:
-//                    workList = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
-//                    workList.DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(mainCount - 1))
-                    
                     guard let unwrapedPrevDragValue = prevDragValue else { return }
                     let timeDiff = value.time.timeIntervalSince(unwrapedPrevDragValue.time)
-//                    print(timeDiff)
                     verticalVelocity = CGFloat(value.location.y - value.predictedEndLocation.y) / CGFloat(timeDiff)
+                    
                     print(verticalVelocity)
                     
+                    if verticalVelocity < -25000 {
+                        withAnimation(.spring()) {
+                            currentHeight = mainHeight
+                        }
+                    } else {
+                        withAnimation(.spring()) { //
+                            currentHeight = maxHeight
+                        }
+                    }
                     
+                    verticalVelocity = .zero
                     
-//                    if abs(verticalVelocity) > 15000 {
+                case _ where currentHeight < (((maxHeight - mainHeight) / 2) + mainHeight) && currentHeight > mainHeight:
+                    guard let unwrapedPrevDragValue = prevDragValue else { return }
+                    let timeDiff = value.time.timeIntervalSince(unwrapedPrevDragValue.time)
+                    verticalVelocity = CGFloat(value.location.y - value.predictedEndLocation.y) / CGFloat(timeDiff)
+                    
+                    //                    print(verticalVelocity)
+                    
+                    if verticalVelocity > 30000 {
+                        withAnimation(.spring()) {
+                            currentHeight = maxHeight
+                        }
+                    } else {
+                        withAnimation(.spring()) { //
+                            currentHeight = mainHeight
+                        }
+                    }
+                    
+                    verticalVelocity = .zero
+                case (((mainHeight - minHeight) / 2) + minHeight)..<(((maxHeight - mainHeight) / 2) + mainHeight):
+                    withAnimation(.spring()) {
+                        currentHeight = mainHeight
+                    }
+                case ..<(((mainHeight - minHeight) / 2) + minHeight):
+                    withAnimation(.spring()) {
+                        currentHeight = minHeight
+                    }
+                case maxHeight..<contentHeight:
+                    print("yup")
+                    guard let unwrapedPrevDragValue = prevDragValue else { return }
+                    let timeDiff = value.time.timeIntervalSince(unwrapedPrevDragValue.time)
+                    verticalVelocity = CGFloat(value.location.y - value.predictedEndLocation.y) / CGFloat(timeDiff)
+                    let localVerticalVelocity = verticalVelocity
+                    var testCurrentHeight: CGFloat = currentHeight
+                    
+                    //                    print(verticalVelocity)
+                    
+                    for x in 1..<100 {
+                        if testCurrentHeight + verticalVelocity / 500000 * CGFloat(100 - x) < maxHeight {
+                            testCurrentHeight = maxHeight
+                            
+                            print("one ", testCurrentHeight)
+                            break
+                        } else if testCurrentHeight + verticalVelocity / 500000 * CGFloat(100 - x) > contentHeight {
+                            testCurrentHeight = contentHeight
+                            
+                            //                            print(":>" , testCurrentHeight + verticalVelocity / 500000 * CGFloat(100 - x))
+                            print("two ", testCurrentHeight)
+                            break
+                        } else {
+                            testCurrentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
+                        }
+                    }
+                    
+                    if testCurrentHeight != maxHeight && testCurrentHeight != contentHeight {
+                        print("three")
+                        
+                        for x in 1..<100 {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(x - 1)) {
+                                withAnimation(.interactiveSpring()) {
+                                    if !isDragging && localVerticalVelocity == verticalVelocity {
+                                        currentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
+                                    }
+                                }
+                            }
+                        }
+                    } else if testCurrentHeight == maxHeight {
+                        for x in 1..<100 {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(x - 1)) {
+                                withAnimation(.interactiveSpring()) {
+                                    if !isDragging && localVerticalVelocity == verticalVelocity {
+                                        if currentHeight >= maxHeight {
+                                            currentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
+                                        } else {
+                                            if verticalVelocity != .zero {
+                                                currentHeight = maxHeight
+                                                verticalVelocity = .zero
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if testCurrentHeight == contentHeight {
+                        for x in 1..<100 {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(x - 1)) {
+                                withAnimation(.interactiveSpring()) {
+                                    if !isDragging && localVerticalVelocity == verticalVelocity {
+                                        if currentHeight < contentHeight {
+                                            currentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
+                                        } else {
+                                            var verticalVelocityForBouncedBottom = verticalVelocity * 0.35
+                                            var localVerticalVelocityForBouncedBottom = verticalVelocity * 0.35
+                                            
+                                            for y in 1..<35 {
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(y - 1)) {
+                                                    withAnimation(.interactiveSpring()) {
+                                                        if !isDragging && localVerticalVelocityForBouncedBottom == verticalVelocityForBouncedBottom {
+                                                            currentHeight += verticalVelocityForBouncedBottom / 500000 * CGFloat(35 - y)
+                                                        }
+                                                        
+                                                        if y + 1 == 35 {
+                                                            verticalVelocityForBouncedBottom = (-1) * verticalVelocityForBouncedBottom
+                                                            localVerticalVelocityForBouncedBottom = (-1) * localVerticalVelocityForBouncedBottom
+                                                            
+                                                            for z in 1..<35 {
+                                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(z - 1)) {
+                                                                    withAnimation(.interactiveSpring()) {
+                                                                        if !isDragging {
+                                                                            if currentHeight + verticalVelocityForBouncedBottom / 500000 * CGFloat(35 - z) > contentHeight {
+                                                                                if localVerticalVelocityForBouncedBottom == verticalVelocityForBouncedBottom {
+                                                                                    currentHeight += verticalVelocityForBouncedBottom / 500000 * CGFloat(35 - z)
+                                                                                }
+                                                                            } else {
+                                                                                //                                                                                currentHeight = contentHeight
+                                                                                //                                                                                print("STOP")
+                                                                                verticalVelocityForBouncedBottom = .zero
+                                                                                localVerticalVelocityForBouncedBottom = .zero
+                                                                            }
+                                                                            
+                                                                            
+                                                                            if z + 1 == 35 {
+                                                                                if verticalVelocityForBouncedBottom != .zero {
+                                                                                    currentHeight = contentHeight
+                                                                                    print("qwerty")
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            verticalVelocity = .zero
+                                            
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                case contentHeight...:
+                    guard let unwrapedPrevDragValue = prevDragValue else { return }
+                    let timeDiff = value.time.timeIntervalSince(unwrapedPrevDragValue.time)
+                    verticalVelocity = CGFloat(value.location.y - value.predictedEndLocation.y) / CGFloat(timeDiff)
+                    
+                    if verticalVelocity < 0 {
                         var testCurrentHeight: CGFloat = currentHeight
                         
                         for x in 1..<100 {
                             if testCurrentHeight + verticalVelocity / 500000 * CGFloat(100 - x) < maxHeight {
                                 testCurrentHeight = maxHeight
                                 
-                                print("one ", testCurrentHeight)
                                 break
                             } else if testCurrentHeight + verticalVelocity / 500000 * CGFloat(100 - x) > contentHeight {
                                 testCurrentHeight = contentHeight
                                 
-                                print(":>" , testCurrentHeight + verticalVelocity / 500000 * CGFloat(100 - x))
-                                print("two ", testCurrentHeight)
                                 break
                             } else {
                                 testCurrentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
@@ -192,17 +378,11 @@ private extension PopupView {
                         if testCurrentHeight != maxHeight && testCurrentHeight != contentHeight {
                             for x in 1..<100 {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(x - 1)) {
-                                    //                                DispatchQueue.main.sync {
-                                    //                                    currentHeight += (-1) * (value.predictedEndLocation.y - value.location.y) / abs(value.predictedEndLocation.y - value.location.y) * verticalVelocity / 10000 * CGFloat(x)
-                                    //                                }
                                     withAnimation(.interactiveSpring()) {
                                         if !isDragging {
-//                                            workList.setEventHandler {
-                                                currentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
-//                                            }
+                                            currentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
                                         }
                                     }
-                                    //                                print( (value.predictedEndLocation.y - value.location.y) / abs(value.predictedEndLocation.y - value.location.y) * verticalVelocity / 1000000 * CGFloat(100 - x))
                                 }
                             }
                         } else if testCurrentHeight == maxHeight {
@@ -210,85 +390,34 @@ private extension PopupView {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(x - 1)) {
                                     withAnimation(.interactiveSpring()) {
                                         if !isDragging {
-                                            if currentHeight >= maxHeight {
+                                            if currentHeight > maxHeight {
                                                 currentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
                                             } else {
-                                                currentHeight = maxHeight
-                                                verticalVelocity = 0
+                                                if verticalVelocity != .zero {
+                                                    currentHeight = maxHeight
+                                                    verticalVelocity = .zero
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         } else if testCurrentHeight == contentHeight {
-                            for x in 1..<100 {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.005 * Double(x - 1)) {
-                                    withAnimation(.interactiveSpring()) {
-                                        if !isDragging {
-                                            if currentHeight <= contentHeight {
-                                                currentHeight += verticalVelocity / 500000 * CGFloat(100 - x)
-                                            } else {
-                                                currentHeight = contentHeight
-                                                verticalVelocity = 0
-                                            }
-                                        }
-                                    }
-                                }
+                            withAnimation(.spring()) {
+                                currentHeight = contentHeight
+                                verticalVelocity = .zero
                             }
                         }
-                    
-//                    workList.resume()
-                    
-                    //                    }
-                    
-                    
-                    
-//                    if verticalVelocity > 20000 {
-//                        if currentHeight + (-1) * (value.predictedEndLocation.y - value.location.y) / abs(value.predictedEndLocation.y - value.location.y) * verticalVelocity / 250 < maxHeight {
-//                            currentHeight = maxHeight
-//                        } else if currentHeight + (-1) * (value.predictedEndLocation.y - value.location.y) / abs(value.predictedEndLocation.y - value.location.y) * verticalVelocity / 250 > contentHeight {
-//                            currentHeight = contentHeight
-//                        } else {
-//                            currentHeight += (-1) * (value.predictedEndLocation.y - value.location.y) / abs(value.predictedEndLocation.y - value.location.y) * verticalVelocity / 500
-//                        }
-//                    }
-                    
-                    //                    if verticalVelocity > 1000 {
-                    //                        currentHeight += (-1) * (value.predictedEndLocation.y - value.location.y) / abs(value.predictedEndLocation.y - value.location.y) * verticalVelocity / 2000
-                    //                    } else if verticalVelocity > 10000 {
-                    //                        currentHeight += (-1) * (value.predictedEndLocation.y - value.location.y) / abs(value.predictedEndLocation.y - value.location.y) * verticalVelocity / 1000
-                    //                    } else if verticalVelocity > 90000 {
-                    //                        currentHeight += (-1) * (value.predictedEndLocation.y - value.location.y) / abs(value.predictedEndLocation.y - value.location.y) * verticalVelocity / 10
-                    //                    }
-                    
-                    //                    withAnimation(.interactiveSpring()) {
-                    //                        if verticalVelocity
-                    //                    }
-                    
-                    //                    withAnimation(.interactiveSpring()) {
-                    //                        for x in stride(from: 2, to: 10, by: 2) {
-                    //                            if currentHeight + CGFloat(x) * (verticalVelocity - 100 * verticalVelocity / abs(verticalVelocity)) < contentHeight && currentHeight + CGFloat(x) * (verticalVelocity - 100 * verticalVelocity / abs(verticalVelocity)) > maxHeight {
-                    //                                currentHeight += CGFloat(x) * (verticalVelocity - 100 * verticalVelocity / abs(verticalVelocity))
-                    //                                print("ok")
-                    //                            } else if currentHeight + CGFloat(x) * (verticalVelocity - 100 * verticalVelocity / abs(verticalVelocity)) >= contentHeight {
-                    //                                currentHeight = contentHeight
-                    //                                break
-                    //                            } else if currentHeight + CGFloat(x) * (verticalVelocity - 100 * verticalVelocity / abs(verticalVelocity)) <= maxHeight {
-                    //                                currentHeight = maxHeight
-                    //                                break
-                    //                            } else {
-                    //                                print("Error")
-                    //                            }
-                    //                        }
-                    //                    }
-                case contentHeight...:
-                    withAnimation(.spring()) {
-                        currentHeight = contentHeight
+                    } else {
+                        withAnimation(.spring()) {
+                            currentHeight = contentHeight
+                            verticalVelocity = .zero
+                        }
                     }
                 default: ()
                 }
                 
-                prevDrag = .zero
+                prevDragTranslationHeight = .zero
                 prevDragValue = .none
             }
     }
@@ -340,38 +469,32 @@ private extension PopupView {
             Text(config.content)
                 .font(.callout)
                 .foregroundColor(.black.opacity(0.8))
+            
             VStack {
                 Rectangle()
-                    .frame(maxWidth: .infinity)
                     .frame(height: 300)
                     .foregroundColor(.black)
                 
                 Rectangle()
-                    .frame(maxWidth: .infinity)
                     .frame(height: 300)
                     .foregroundColor(.black)
                 
                 Rectangle()
-                    .frame(maxWidth: .infinity)
                     .frame(height: 300)
                     .foregroundColor(.black)
                 
                 Rectangle()
-                    .frame(maxWidth: .infinity)
                     .frame(height: 300)
                     .foregroundColor(.red)
                 
                 Rectangle()
-                    .frame(maxWidth: .infinity)
                     .frame(height: 300)
                     .foregroundColor(.red)
                 
                 Rectangle()
-                    .frame(maxWidth: .infinity)
                     .frame(height: 300)
                     .foregroundColor(.red)
-            }
-            .padding()
+            }.padding()
         }
     }
 }
