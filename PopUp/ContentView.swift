@@ -9,12 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var sheetManager: SheetManager
-    @State var time = Timer.publish(every: 0.1, on: .current, in: .tracking).autoconnect()
-    
-    @State var start = false
-    @State var scrollPosition: CGFloat = 0.0
-    
-    @State private var prevDragTranslation: CGSize = .zero
     
     var body: some View {
         ZStack {
@@ -22,21 +16,27 @@ struct ContentView: View {
                 .ignoresSafeArea()
             
             VStack {
-                
-                
+                Button("Show custom Sheet") {
+                    withAnimation {
+                        sheetManager.present(with: .init(
+                            systemName: "info",
+                            title: "Text Here",
+                            content: "Other Text",
+                            minHeight: UIScreen.main.bounds.height * 0.2,
+                            mainHeight: UIScreen.main.bounds.height * 0.4,
+                            maxHeight: UIScreen.main.bounds.height * 0.9,
+                            backgroundColor: .white,
+                            scrolling: .init(
+                                isScrollable: true,
+                                time: 100,
+                                slowdownCoeff: 0.000002
+                            )
+                        ))
+                    }
+                }
             }
-            VStack {
-                                Button("Show custom Sheet") {
-                                    withAnimation {
-                                        sheetManager.present(with: .init(systemName: "info", title: "Text Here", content: "Other Text"))
-                                        start.toggle()
-                                    }
-                                }
-                
-            }
-          
         }
-                .popup(with: sheetManager)
+        .popup(with: sheetManager)
         .preferredColorScheme(.light)
     }
 }
