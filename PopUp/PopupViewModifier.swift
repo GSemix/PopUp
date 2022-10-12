@@ -9,13 +9,14 @@ import Foundation
 import SwiftUI
 
 struct PopupViewModifier: ViewModifier {
+    @Binding var scrollPosition: CGFloat
     @StateObject var sheetManager: SheetManager
     
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .bottom) {
                 if case let .present(config) = sheetManager.action {
-                    PopupView(config: config) {
+                    PopupView(currentHeight: $scrollPosition, config: config) {
                         withAnimation {
                             sheetManager.dismiss()
                         }
@@ -27,7 +28,34 @@ struct PopupViewModifier: ViewModifier {
 }
 
 extension View {
-    func popup(with sheetManager: SheetManager) -> some View {
-        self.modifier(PopupViewModifier(sheetManager: sheetManager))
+    func popup(_ scrollPosition: Binding<CGFloat>, with sheetManager: SheetManager) -> some View {
+        self.modifier(PopupViewModifier(scrollPosition: scrollPosition, sheetManager: sheetManager))
+    }
+}
+
+// -------------------
+
+struct PopupViewModifier1: ViewModifier {
+    @Binding var scrollPosition: CGFloat
+    @StateObject var sheetManager: SheetManager1
+    
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .bottom) {
+                if case let .present(config) = sheetManager.action {
+                    PopupView1(currentHeight: $scrollPosition, config: config) {
+                        withAnimation {
+                            sheetManager.dismiss()
+                        }
+                    }
+                }
+            }
+            .ignoresSafeArea()
+    }
+}
+
+extension View {
+    func popup1(_ scrollPosition: Binding<CGFloat>, with sheetManager: SheetManager1) -> some View {
+        self.modifier(PopupViewModifier1(scrollPosition: scrollPosition, sheetManager: sheetManager))
     }
 }

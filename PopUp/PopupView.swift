@@ -11,7 +11,7 @@ struct PopupView: View {
     @GestureState private var dragGestureActive: Bool = false
     @State private var prevDragValue: DragGesture.Value?
     @State private var prevDragTranslationHeight: CGFloat = .zero
-    @State private var currentHeight: CGFloat = .zero
+    @Binding public var currentHeight: CGFloat
     @State private var isDragging: Bool = false
     @State private var verticalVelocity: CGFloat = .zero
     @State private var contentHeight: CGFloat = .zero
@@ -39,6 +39,9 @@ struct PopupView: View {
     private var time: Int {
         return config.scrolling.time
     }
+    private var tapToGrow: Bool {
+        return config.tapToGrow
+    }
     private var halfBounceTime: Int {
         return Int(config.scrolling.time / 3)
     }
@@ -55,17 +58,14 @@ struct PopupView: View {
     
     let didClose: () -> Void
     
-    //    let startOpacity: Double = 0.4
-    //    let endOpacity: Double = 0.8
-    //    var dragPercentage: Double {
-    //        let result = Double((currentHeight - minHeight) / (maxHeight - minHeight))
-    //        return max(0, min(1, result))
-    //    }
-    
     var body: some View {
         ScrollView([]) {
             VStack {
                 icon
+                Button(action: {print("hello")}) {
+                    Text("press me")
+                }
+                .disabled(currentHeight < maxHeight)
                 title
                 content
             }
@@ -95,7 +95,7 @@ struct PopupView: View {
         //                    close
         //                })
         .gesture(dragGesture)
-        .simultaneousGesture(tapToMaxHeight)
+        .simultaneousGesture(tapToGrow ? tapToMaxHeight : nil)
         .overlay(alignment: .topTrailing, content: {
             close
         })
@@ -118,30 +118,33 @@ struct PopupView: View {
                 print("start")
             }
         }
+        .onDisappear {
+            currentHeight = .zero
+        }
     }
 }
 
-struct PopupView_Previews: PreviewProvider {
-    static var previews: some View {
-        PopupView(config: .init(
-            systemName: "info",
-            title: "Text",
-            content: "Another text",
-            minHeight: CGFloat(150),
-            mainHeight: CGFloat(300),
-            maxHeight: CGFloat(800),
-            backgroundColor: .white,
-            scrolling: .init(
-                isScrollable: true,
-                time: 100,
-                slowdownCoeff: 0.00002
-            )
-        )) {}
-            .padding()
-            .background(.blue)
-            .previewLayout(.sizeThatFits)
-    }
-}
+//struct PopupView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        PopupView(config: .init(
+//            systemName: "info",
+//            title: "Text",
+//            content: "Another text",
+//            minHeight: CGFloat(150),
+//            mainHeight: CGFloat(300),
+//            maxHeight: CGFloat(800),
+//            backgroundColor: .white,
+//            scrolling: .init(
+//                isScrollable: true,
+//                time: 100,
+//                slowdownCoeff: 0.00002
+//            )
+//        )) {}
+//            .padding()
+//            .background(.blue)
+//            .previewLayout(.sizeThatFits)
+//    }
+//}
 
 // MARK: - Extentions for Scrolling
 private extension PopupView {
@@ -573,5 +576,368 @@ struct RoundedCorner: Shape {
     func path(in rect: CGRect) -> Path {
         let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
         return Path(path.cgPath)
+    }
+}
+
+// ----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct PopupView1: View {
+    @GestureState private var dragGestureActive: Bool = false
+    @State private var prevDragValue: DragGesture.Value?
+    @State private var prevDragTranslationHeight: CGFloat = .zero
+    @Binding public var currentHeight: CGFloat
+    @State private var isDragging: Bool = false
+    
+    public let config: SheetManager1.Config1
+    private let verticalVelocityForFastScrollDown: CGFloat = -25000
+    private let verticalVelocityForFastScrollUp: CGFloat = 30000
+    
+    private var minHeight: CGFloat {
+        return config.minHeight
+    }
+    private var mainHeight: CGFloat {
+        return config.mainHeight
+    }
+    private var maxHeight: CGFloat {
+        return config.maxHeight
+    }
+    private var backgroundColor: Color {
+        return config.backgroundColor
+    }
+    private var isScrollable: Bool {
+        return config.isScrollable
+    }
+    private var tapToGrow: Bool {
+        return config.tapToGrow
+    }
+    
+    private var betweenMaxAndMainHeight: CGFloat {
+        return (((maxHeight - mainHeight) / 2) + mainHeight)
+    }
+    private var betweenMainAndMinHeight: CGFloat {
+        return (((mainHeight - minHeight) / 2) + minHeight)
+    }
+    
+    let didClose: () -> Void
+    
+    var body: some View {
+        ScrollView(isScrollable ? .vertical : [], showsIndicators: false) {
+        ScrollViewReader { value in
+                VStack {
+                    icon
+                    Button(action: {print("hello")}) {
+                        Text("press me")
+                    }
+                    title
+                    content
+                }
+                .id("content")
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onChange(of: currentHeight) { _ in
+                                if currentHeight < maxHeight && proxy.frame(in: .named("scroll")).minY < 0 && isScrollable {
+                                    withAnimation(.spring()) {
+                                        value.scrollTo("content", anchor: UnitPoint(x: 0, y: 0))
+                                    }
+                                }
+                                
+                            }
+                    }
+                )
+            }
+        }
+        .coordinateSpace(name: "scroll")
+        .disabled(isScrollable ? currentHeight < maxHeight : false)
+        .frame(height: currentHeight)
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
+        .background(backgroundContent)
+        .simultaneousGesture(tapToGrow ? tapToMaxHeight : nil)
+        .overlay(alignment: .topTrailing, content: {
+            close
+        })
+        .overlay(alignment: .top, content: {
+            handle
+                .gesture(dragGesture)
+        })
+        .transition(.move(edge: .bottom))
+        .onChange(of: dragGestureActive) { newIsActiveValue in
+            if newIsActiveValue == false {
+                withAnimation(.spring()) {
+                    dragCancelled()
+                }
+            } else {
+                print("changed")
+            }
+        }
+        .onAppear {
+            withAnimation(.spring()) {
+                currentHeight = mainHeight
+                print("start")
+            }
+        }
+        .onDisappear {
+            currentHeight = .zero
+        }
+    }
+}
+
+// MARK: - Extentions for Scrolling
+private extension PopupView1 {
+    private func dragCancelled() {
+        withAnimation(.spring()) {
+            isDragging = false
+
+            switch currentHeight {
+            case betweenMaxAndMainHeight...:
+                currentHeight = maxHeight
+            case betweenMainAndMinHeight..<betweenMaxAndMainHeight:
+                currentHeight = mainHeight
+            case ..<betweenMainAndMinHeight:
+                currentHeight = minHeight
+            default: ()
+            }
+        }
+        
+        prevDragTranslationHeight = .zero
+        prevDragValue = .none
+        print("cancelled")
+    }
+    
+    private func getVelocityScrollingCoeff() -> CGFloat {
+        if currentHeight >= maxHeight {
+            return 0.35
+        } else if currentHeight < maxHeight && currentHeight > minHeight - minHeight / 3 {
+            return 1.35
+        } else {
+            return 0
+        }
+    }
+    
+    private func getTimeOfLastScroll(_ value: DragGesture.Value) -> TimeInterval {
+        guard let unwrapedPrevDragValue = prevDragValue else { return 0}
+        return value.time.timeIntervalSince(unwrapedPrevDragValue.time)
+    }
+    
+    private func getVerticalVelocityOfLastScroll(_ value: DragGesture.Value, with timeDiff: TimeInterval) -> CGFloat {
+        return CGFloat(value.location.y - value.predictedEndLocation.y) / CGFloat(timeDiff)
+    }
+    
+    private func fastScrollDown(verticalVelocity: CGFloat) {
+        if verticalVelocity < verticalVelocityForFastScrollDown {
+            withAnimation(.spring()) {
+                currentHeight = mainHeight
+            }
+        } else {
+            withAnimation(.spring()) {
+                currentHeight = maxHeight
+            }
+        }
+    }
+    
+    private func fastScrollUp(verticalVelocity: CGFloat) {
+        if verticalVelocity > verticalVelocityForFastScrollUp {
+            withAnimation(.spring()) {
+                currentHeight = maxHeight
+            }
+        } else {
+            withAnimation(.spring()) {
+                currentHeight = mainHeight
+            }
+        }
+    }
+}
+
+// MARK: - Extentions for Dragging
+private extension PopupView1 {
+    var tapToMaxHeight: some Gesture {
+        TapGesture()
+            .onEnded { _ in
+                if [minHeight, mainHeight].contains(currentHeight) {
+                    withAnimation(.spring()) {
+                        currentHeight = maxHeight
+                    }
+                    
+                    print("hello")
+                }
+            }
+    }
+    
+    var dragGesture: some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .global)
+            .updating($dragGestureActive) { value, state, transaction in
+                state = true
+            }
+            .onChanged { value in
+                if !isDragging {
+                    withAnimation(.spring()) {
+                        isDragging = true
+                    }
+                }
+                
+                withAnimation(.interactiveSpring()) { // 0.05
+                    let dragAmount = value.translation.height - prevDragTranslationHeight
+                    
+                    
+                    currentHeight -= dragAmount * getVelocityScrollingCoeff()
+                    
+                    prevDragValue = value
+                    prevDragTranslationHeight = value.translation.height
+                }
+            }
+            .onEnded { value in
+                withAnimation(.spring()) {
+                    isDragging = false
+                }
+                
+                switch currentHeight {
+                case betweenMaxAndMainHeight...:
+                    let timeDiff = getTimeOfLastScroll(value)
+                    let verticalVelocity = getVerticalVelocityOfLastScroll(value, with: timeDiff)
+                    
+                    print("max - main", verticalVelocity)
+                    fastScrollDown(verticalVelocity: verticalVelocity)
+                    
+                case _ where currentHeight < betweenMaxAndMainHeight && currentHeight > mainHeight:
+                    let timeDiff = getTimeOfLastScroll(value)
+                    let verticalVelocity = getVerticalVelocityOfLastScroll(value, with: timeDiff)
+                    
+                    print("main - min", verticalVelocity)
+                    fastScrollUp(verticalVelocity: verticalVelocity)
+                    
+                case betweenMainAndMinHeight..<betweenMaxAndMainHeight:
+                    withAnimation(.spring()) {
+                        currentHeight = mainHeight
+                    }
+                case ..<betweenMainAndMinHeight:
+                    withAnimation(.spring()) {
+                        currentHeight = minHeight
+                    }
+                default: ()
+                }
+                
+                prevDragTranslationHeight = .zero
+                prevDragValue = .none
+            }
+    }
+}
+
+// MARK: - Extentions for Content
+private extension PopupView1 {
+    var close: some View {
+        Button(action: {
+            didClose()
+        }, label: {
+            Image(systemName: "xmark")
+                .symbolVariant(.circle.fill)
+                .font(.system(size: 35,
+                              weight: .bold,
+                              design: .rounded
+                             )
+                )
+                .foregroundStyle(.gray.opacity(0.4))
+                .padding()
+        }
+        )
+    }
+    
+    var icon: some View {
+        Image(systemName: config.systemName)
+            .symbolVariant(.circle.fill)
+            .font(
+                .system(size: 50,
+                        weight: .bold,
+                        design: .rounded
+                       )
+            )
+            .foregroundColor(.blue)
+    }
+    
+    var title: some View {
+        Text(config.title)
+            .font(
+                .system(size: 30,
+                        weight: .bold,
+                        design: .rounded
+                       )
+            )
+            .padding()
+    }
+    
+    var content: some View {
+        VStack {
+            Text(config.content)
+                .font(.callout)
+                .foregroundColor(.black.opacity(0.8))
+            
+            VStack {
+                Rectangle()
+                    .frame(height: 300)
+                    .foregroundColor(.black)
+                
+                Rectangle()
+                    .frame(height: 300)
+                    .foregroundColor(.black)
+                
+                Rectangle()
+                    .frame(height: 300)
+                    .foregroundColor(.black)
+                
+                Rectangle()
+                    .frame(height: 300)
+                    .foregroundColor(.red)
+                
+                Rectangle()
+                    .frame(height: 300)
+                    .foregroundColor(.red)
+                
+                Rectangle()
+                    .frame(height: 300)
+                    .foregroundColor(.red)
+            }
+            .padding()
+        }
+    }
+    
+    var handle: some View {
+            Capsule()
+                .frame(width: 40, height: 10)
+                .frame(maxWidth: .infinity)
+                .background(Color.white.opacity(0.000002))
+                .foregroundColor(.gray.opacity(0.6))
+                .offset(y: -10 - 10)
+    }
+    
+    var backgroundContent: some View {
+        backgroundColor
+            .cornerRadius(10, corners: [.topLeft, .topRight])
+            .shadow(color: .black.opacity(0.2), radius: 3)
     }
 }
