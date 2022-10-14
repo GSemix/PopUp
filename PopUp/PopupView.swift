@@ -48,6 +48,9 @@ struct PopupView: View {
     private var slowdownCoeff: Double {
         return config.scrolling.slowdownCoeff
     }
+    private var delay: Int {
+        return config.scrolling.delay
+    }
     
     private var betweenMaxAndMainHeight: CGFloat {
         return (((maxHeight - mainHeight) / 2) + mainHeight)
@@ -91,9 +94,6 @@ struct PopupView: View {
         .frame(maxWidth: .infinity)
         .multilineTextAlignment(.center)
         .background(backgroundContent)
-        //                .overlay(alignment: .topTrailing, content: {
-        //                    close
-        //                })
         .gesture(dragGesture)
         .simultaneousGesture(tapToGrow ? tapToMaxHeight : nil)
         .overlay(alignment: .topTrailing, content: {
@@ -239,7 +239,7 @@ private extension PopupView {
         print("three")
         
         for x in 0...time {
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(5 * x)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(delay * x)) {
                 withAnimation(.interactiveSpring()) {
                     if !isDragging && localVerticalVelocity == verticalVelocity {
                         currentHeight += verticalVelocity * slowdownCoeff * CGFloat(time - x)
@@ -252,7 +252,7 @@ private extension PopupView {
     
     private func scrollToMaxHeight(with localVerticalVelocity: CGFloat) {
         for x in 0...time {
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(5 * x)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(delay * x)) {
                 withAnimation(.interactiveSpring()) {
                     if !isDragging && localVerticalVelocity == verticalVelocity {
                         if currentHeight >= maxHeight {
@@ -271,7 +271,7 @@ private extension PopupView {
     
     private func scrollToContentHeight(with localVerticalVelocity: CGFloat) {
         for x in 0...time {
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(5 * x)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(delay * x)) {
                 withAnimation(.interactiveSpring()) {
                     if !isDragging && localVerticalVelocity == verticalVelocity {
                         if currentHeight < contentHeight {
@@ -291,7 +291,7 @@ private extension PopupView {
         var localVerticalVelocityForBouncedBottom = verticalVelocityForBouncedBottom
         
         for y in 0...halfBounceTime {
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(5 * y)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(delay * y)) {
                 if !isDragging && localVerticalVelocityForBouncedBottom == verticalVelocityForBouncedBottom {
                     withAnimation(.interactiveSpring()) {
                         currentHeight += verticalVelocityForBouncedBottom * slowdownCoeff * CGFloat(halfBounceTime - y)
@@ -303,7 +303,7 @@ private extension PopupView {
                     localVerticalVelocityForBouncedBottom = (-1) * localVerticalVelocityForBouncedBottom
                     
                     for z in 0...halfBounceTime {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(5 * z)) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(delay * z)) {
                             withAnimation(.interactiveSpring()) {
                                 if !isDragging {
                                     if currentHeight + verticalVelocityForBouncedBottom * slowdownCoeff * CGFloat(halfBounceTime - z) > contentHeight {
@@ -927,12 +927,17 @@ private extension PopupView1 {
     }
     
     var handle: some View {
+        ZStack {
+            Color.white.opacity(0.000002)
+                .frame(maxWidth: .infinity)
+                .frame(height: 30)
+            
             Capsule()
                 .frame(width: 40, height: 10)
                 .frame(maxWidth: .infinity)
-                .background(Color.white.opacity(0.000002))
                 .foregroundColor(.gray.opacity(0.6))
-                .offset(y: -10 - 10)
+                .offset(y: -10 - 20)
+        }
     }
     
     var backgroundContent: some View {

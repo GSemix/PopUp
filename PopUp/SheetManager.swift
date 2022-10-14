@@ -29,11 +29,13 @@ final class SheetManager: ObservableObject {
                 let isScrollable: Bool
                 let time: Int
                 let slowdownCoeff: Double
+                let delay: Int
                 
-                init(isScrollable: Bool, time: Int, slowdownCoeff: Double) {
+                init(isScrollable: Bool, time: Int, slowdownCoeff: Double, delay: Int) {
                     self.isScrollable = isScrollable
                     self.time = time
                     self.slowdownCoeff = slowdownCoeff
+                    self.delay = delay
                 }
                 
                 init(isScrollable: Bool) {
@@ -42,9 +44,11 @@ final class SheetManager: ObservableObject {
                     if isScrollable {
                         self.time = 100
                         self.slowdownCoeff = 0.000002
+                        self.delay = 5
                     } else {
                         self.time = 0
                         self.slowdownCoeff = 0.0
+                        self.delay = 0
                     }
                 }
             }
@@ -107,6 +111,11 @@ final class SheetManager1: ObservableObject {
     }
     
     @Published private(set) var action: Action1 = .na
+//    @Published private var config: Config1?
+    
+//    func setConfig() {
+//        self.config = Config1()
+//    }
     
     func present(with config: Config1) {
         guard !action.isPresented else { return }

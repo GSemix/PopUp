@@ -13,13 +13,66 @@ struct ContentView: View {
     
     @State var scrollPosition: CGFloat = .zero
     
+    @State var time: String = "100"
+    @State var slowdownCoeff: String = "0.000002"
+    @State var delay: String = "5"
+    
     var body: some View {
         ZStack {
             Color.mint
                 .ignoresSafeArea()
             
             VStack(spacing: 50) {
-                Text(scrollPosition.description)
+                HStack {
+                    Spacer()
+                    Text(scrollPosition.description)
+                    Spacer()
+                }
+                .padding(.top, 50)
+                
+                VStack {
+                    HStack {
+                        Text("Text: ")
+                        TextField("time", text: $time)
+                    }
+                    
+                    HStack {
+                        Text("SlowdownCoeff: ")
+                        TextField("slowdownCoeff", text: $slowdownCoeff)
+                    }
+                    
+                    HStack {
+                        Text("Delay: ")
+                        TextField("delay", text: $delay)
+                    }
+                }
+                
+                HStack {
+                    Button(action: {
+                        time = "100"
+                        slowdownCoeff = "0.000002"
+                        delay = "5"
+                    }) {
+                        Text("Default")
+                    }
+                    
+                    Button(action: {
+                        time = "150"
+                        slowdownCoeff = "0.0000035"
+                        delay = "3"
+                    }) {
+                        Text("Config <1>")
+                    }
+                    
+                    Button(action: {
+                        time = "150"
+                        slowdownCoeff = "0.0000015"
+                        delay = "3"
+                    }) {
+                        Text("Config <2>")
+                    }
+                }
+                
                 Button("Show custom Sheet") {
                     withAnimation {
                         sheetManager.present(with: .init(
@@ -32,8 +85,9 @@ struct ContentView: View {
                             backgroundColor: .white,
                             scrolling: .init(
                                 isScrollable: true,
-                                time: 100,
-                                slowdownCoeff: 0.000003 // 0.000002
+                                time: Int(time)!, // 100
+                                slowdownCoeff: Double(slowdownCoeff)!, // 0.000002 // 0.000003
+                                delay: Int(delay)! // 5
                             ),
                             tapToGrow: true
                         ))
@@ -62,6 +116,8 @@ struct ContentView: View {
                         sheetManager1.dismiss()
                     }
                 }
+                
+                Spacer()
             }
         }
         .popup($scrollPosition, with: sheetManager)
