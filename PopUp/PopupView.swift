@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct PopupView: View {
+struct PopupView<Content: View>: View {
     @GestureState private var dragGestureActive: Bool = false
     @State private var prevDragValue: DragGesture.Value?
     @State private var prevDragTranslationHeight: CGFloat = .zero
@@ -60,17 +60,19 @@ struct PopupView: View {
     }
     
     let didClose: () -> Void
+    var content: Content
     
     var body: some View {
         ScrollView([]) {
             VStack {
+                content
                 icon
                 Button(action: {print("hello")}) {
                     Text("press me")
                 }
                 .disabled(currentHeight < maxHeight)
                 title
-                content
+                anyThing
             }
             .offset(y: isScrollable ? (currentHeight <= maxHeight ? .zero : maxHeight - currentHeight) : .zero)
             .background(
@@ -504,7 +506,7 @@ private extension PopupView {
             .padding()
     }
     
-    var content: some View {
+    var anyThing: some View {
         VStack {
             Text(config.content)
                 .font(.callout)
@@ -764,7 +766,7 @@ private extension PopupView1 {
     
     private func fastScrollUp(verticalVelocity: CGFloat) {
         if verticalVelocity > verticalVelocityForFastScrollUp {
-            withAnimation(.spring()) {
+            withAnimation(.easeInOut(duration: 0.25)) {
                 currentHeight = maxHeight
             }
         } else {

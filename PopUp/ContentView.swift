@@ -13,9 +13,11 @@ struct ContentView: View {
     
     @State var scrollPosition: CGFloat = .zero
     
-    @State var time: String = "100"
-    @State var slowdownCoeff: String = "0.000002"
-    @State var delay: String = "5"
+    @State var time: String = "150"
+    @State var slowdownCoeff: String = "0.0000015"
+    @State var delay: String = "3"
+    @State var config1: SheetManager.Action.Info?
+    @State var config2: SheetManager.Action.Info?
     
     var body: some View {
         ZStack {
@@ -49,9 +51,9 @@ struct ContentView: View {
                 
                 HStack {
                     Button(action: {
-                        time = "100"
-                        slowdownCoeff = "0.000002"
-                        delay = "5"
+                        time = "150"
+                        slowdownCoeff = "0.0000015"
+                        delay = "3"
                     }) {
                         Text("Default")
                     }
@@ -65,32 +67,41 @@ struct ContentView: View {
                     }
                     
                     Button(action: {
-                        time = "150"
-                        slowdownCoeff = "0.0000015"
-                        delay = "3"
+                        time = "100"
+                        slowdownCoeff = "0.000002"
+                        delay = "5"
                     }) {
                         Text("Config <2>")
                     }
                 }
                 
+                Button("Show custom Sheet >>>>>>>>") {
+                    withAnimation {
+                        if sheetManager.action.isPresented {
+                            sheetManager.dismiss()
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                sheetManager.present(with: config2!)
+                            }
+                        } else {
+                            sheetManager.dismiss()
+                            sheetManager.present(with: config2!)
+                        }
+                    }
+                }
+                
                 Button("Show custom Sheet") {
                     withAnimation {
-                        sheetManager.present(with: .init(
-                            systemName: "info",
-                            title: "Text Here",
-                            content: "Other Text",
-                            minHeight: UIScreen.main.bounds.height * 0.2,
-                            mainHeight: UIScreen.main.bounds.height * 0.4,
-                            maxHeight: UIScreen.main.bounds.height * 0.9,
-                            backgroundColor: .white,
-                            scrolling: .init(
-                                isScrollable: true,
-                                time: Int(time)!, // 100
-                                slowdownCoeff: Double(slowdownCoeff)!, // 0.000002 // 0.000003
-                                delay: Int(delay)! // 5
-                            ),
-                            tapToGrow: true
-                        ))
+                        if sheetManager.action.isPresented {
+                            sheetManager.dismiss()
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                sheetManager.present(with: config1!)
+                            }
+                        } else {
+                            sheetManager.dismiss()
+                            sheetManager.present(with: config1!)
+                        }
                     }
                 }
                 
@@ -120,9 +131,49 @@ struct ContentView: View {
                 Spacer()
             }
         }
-        .popup($scrollPosition, with: sheetManager)
+        .popup($scrollPosition, with: sheetManager, someContent: AnyView(
+            VStack {
+                Text(time.description)
+                    .padding()
+            }
+        ))
         .popup1($scrollPosition, with: sheetManager1)
         .preferredColorScheme(.light)
+        .onAppear {
+            config1 = .init(
+                systemName: "info",
+                title: "Text Here",
+                content: "Other Text",
+                minHeight: UIScreen.main.bounds.height * 0.2,
+                mainHeight: UIScreen.main.bounds.height * 0.4,
+                maxHeight: UIScreen.main.bounds.height * 0.9,
+                backgroundColor: .white,
+                scrolling: .init(
+                    isScrollable: true,
+                    time: Int(time)!, // 100
+                    slowdownCoeff: Double(slowdownCoeff)!, // 0.000002 // 0.000003
+                    delay: Int(delay)! // 5
+                ),
+                tapToGrow: true
+            )
+            
+            config2 = .init(
+                systemName: "info",
+                title: "Text NEW",
+                content: "Other Text",
+                minHeight: UIScreen.main.bounds.height * 0.2,
+                mainHeight: UIScreen.main.bounds.height * 0.4,
+                maxHeight: UIScreen.main.bounds.height * 0.9,
+                backgroundColor: .white,
+                scrolling: .init(
+                    isScrollable: true,
+                    time: Int(time)!, // 100
+                    slowdownCoeff: Double(slowdownCoeff)!, // 0.000002 // 0.000003
+                    delay: Int(delay)! // 5
+                ),
+                tapToGrow: true
+            )
+        }
     }
 }
 

@@ -42,9 +42,9 @@ final class SheetManager: ObservableObject {
                     self.isScrollable = isScrollable
                     
                     if isScrollable {
-                        self.time = 100
-                        self.slowdownCoeff = 0.000002
-                        self.delay = 5
+                        self.time = 150
+                        self.slowdownCoeff = 0.0000015
+                        self.delay = 3
                     } else {
                         self.time = 0
                         self.slowdownCoeff = 0.0
@@ -62,11 +62,29 @@ final class SheetManager: ObservableObject {
     }
     
     @Published private(set) var action: Action = .na
+//    @Published private(set) var config: Config?
     
     func present(with config: Config) {
         guard !action.isPresented else { return }
         self.action = .present(info: config)
     }
+    
+//    func setConfig(systemName: String, title: String, ) {
+//        config = Config(systemName: "info",
+//                        title: "Text Here",
+//                        content: "Other Text",
+//                        minHeight: UIScreen.main.bounds.height * 0.2,
+//                        mainHeight: UIScreen.main.bounds.height * 0.4,
+//                        maxHeight: UIScreen.main.bounds.height * 0.9,
+//                        backgroundColor: .white,
+//                        scrolling: .init(
+//                            isScrollable: true,
+//                            time: ,
+//                            slowdownCoeff: ,
+//                            delay:
+//                        ),
+//                        tapToGrow: true)
+//    }
     
     func dismiss() {
         self.action = .dismiss
